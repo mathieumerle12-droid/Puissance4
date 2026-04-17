@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Puissance 4 — Multijoueur</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/ably@latest/ably.min.js"></script>
 <style>
   :root { --red:#E8412A; --yellow:#F5C518; --blue-dark:#0D1B2A; --text:#F0EDE6; --text-muted:#7A95AD; --border:rgba(255,255,255,0.08); --card-bg:rgba(255,255,255,0.04); }
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -20,10 +19,10 @@
   input[type=text]::placeholder { color:var(--text-muted); }
   .btn { display:block; width:100%; height:48px; border-radius:10px; border:none; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:0.04em; text-transform:uppercase; }
   .btn-primary { background:var(--yellow); color:#1A1200; margin-bottom:10px; }
-  .btn-secondary { background:rgba(255,255,255,0.08); color:var(--text); border:1px solid var(--border); margin-top:8px; }
+  .btn-secondary { background:rgba(255,255,255,0.08); color:var(--text); border:1px solid var(--border); }
   .divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:var(--text-muted); font-size:12px; }
   .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-  .room-code-display { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; letter-spacing:8px; text-align:center; color:var(--yellow); padding:20px 0 10px; }
+  .room-code-display { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; letter-spacing:4px; text-align:center; color:var(--yellow); padding:20px 0 10px; word-break:break-all; }
   .game-area { width:100%; max-width:480px; }
   .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .player-tag { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card-bg); transition:all 0.3s; }
@@ -40,7 +39,7 @@
   .col-hint.cant { cursor:default; }
   .col-hint.cant::after { opacity:0; }
   .board-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-  .cell { aspect-ratio:1; border-radius:50%; background:rgba(0,0,0,0.35); box-shadow:inset 0 3px 8px rgba(0,0,0,0.5); transition:background 0.15s; }
+  .cell { aspect-ratio:1; border-radius:50%; background:rgba(0,0,0,0.35); box-shadow:inset 0 3px 8px rgba(0,0,0,0.5); }
   .cell.red { background:var(--red); box-shadow:0 0 12px rgba(232,65,42,0.5); }
   .cell.yellow { background:var(--yellow); box-shadow:0 0 12px rgba(245,197,24,0.5); }
   .cell.win { outline:3px solid white; }
@@ -69,7 +68,7 @@
     <button class="btn btn-primary" onclick="createRoom()">Créer une partie</button>
     <div class="divider">ou rejoindre</div>
     <label>Code de la partie</label>
-    <input type="text" id="input-code" placeholder="Ex: AB12" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Syne',sans-serif;font-size:20px;text-align:center;" />
+    <input type="text" id="input-code" placeholder="Collez le code reçu" />
     <button class="btn btn-secondary" style="margin-top:0;" onclick="joinRoom()">Rejoindre</button>
     <div class="error-msg" id="home-error"></div>
   </div>
@@ -77,15 +76,16 @@
 
 <div id="screen-waiting" class="screen hidden">
   <h1>EN ATTENTE</h1>
-  <p class="tagline">Partagez ce code avec votre adversaire</p>
+  <p class="tagline">Envoyez ce code à votre adversaire</p>
   <div class="card" style="text-align:center;">
     <div class="room-code-display" id="waiting-code">----</div>
-    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire entre ce code sur la même page</p>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire colle ce code dans le champ "Code de la partie"</p>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;" class="pulse">
       <span class="spinner"></span> En attente de connexion…
     </div>
   </div>
-  <button class="btn btn-secondary" onclick="resetGame()">Annuler</button>
+  <button class="btn btn-secondary" onclick="copyCode()">Copier le code</button>
+  <button class="btn btn-secondary" style="margin-top:8px;" onclick="resetGame()">Annuler</button>
 </div>
 
 <div id="screen-game" class="game-area hidden">
@@ -107,69 +107,58 @@
 
 <script>
 const COLS=7,ROWS=6;
-const ABLY_KEY='BFwJKQ.gZEOaA:Tnoe2YWxICn58ffGK_yQed3FG87kLmz5HcBx9aoszKw';
-let G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],ably:null,channel:null,restartVote:{red:false,yellow:false}};
+const MASTER_KEY='$2a$10$hchBo1QdwJneh3v3GCUAqeECOPd4/tV/HBPai7VhswEoZ8KpYMNqG';
+let G={role:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null,lastUpdate:0};
 
 function emptyBoard(){return Array(ROWS).fill(null).map(()=>Array(COLS).fill(null));}
-function randCode(){return Math.random().toString(36).substr(2,4).toUpperCase();}
 
-function initAbly(code){
-  if(G.ably)G.ably.close();
-  G.ably=new Ably.Realtime({key:ABLY_KEY});
-  G.channel=G.ably.channels.get('p4-'+code);
+async function createBin(data){
+  const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY,'X-Bin-Private':'false'},body:JSON.stringify(data)});
+  const d=await r.json();
+  return d.metadata?.id||null;
+}
+async function readBin(id){
+  const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':MASTER_KEY,'Cache-Control':'no-cache'}});
+  const d=await r.json();
+  return d.record||null;
+}
+async function writeBin(id,data){
+  await fetch('https://api.jsonbin.io/v3/b/'+id,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},body:JSON.stringify(data)});
 }
 
 async function createRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 1';
   G.name=name; G.role='red';
-  const code=randCode(); G.code=code;
-  initAbly(code);
-  // Écouter les événements
-  G.channel.subscribe('join', msg=>{
-    G.board=G.board||emptyBoard();
-    const room={board:G.board,turn:'red',status:'playing',redName:G.name,yellowName:msg.data.name,gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
-    G.channel.publish('state', room);
-    applyRoom(room);
-    show('game');
-  });
-  G.channel.subscribe('state', msg=>{ applyRoom(msg.data); });
-  G.channel.subscribe('restart_vote', msg=>{
-    G.restartVote[msg.data.color]=true;
-    if(G.restartVote.red&&G.restartVote.yellow){
-      G.restartVote={red:false,yellow:false};
-      const room={board:emptyBoard(),turn:'red',status:'playing',redName:document.getElementById('name-red').textContent,yellowName:document.getElementById('name-yellow').textContent,gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
-      G.channel.publish('state',room);
-      applyRoom(room);
-    }
-  });
-  G.board=emptyBoard();
-  document.getElementById('waiting-code').textContent=code;
+  showError('home-error','Création en cours…');
+  const room={board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false},updatedAt:Date.now()};
+  const binId=await createBin(room);
+  if(!binId){showError('home-error','Erreur réseau, réessayez');return;}
+  G.binId=binId;
+  document.getElementById('waiting-code').textContent=binId;
+  showError('home-error','');
   show('waiting');
+  startPolling();
 }
 
 async function joinRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 2';
-  const code=document.getElementById('input-code').value.trim().toUpperCase();
-  if(code.length<4){showError('home-error','Code invalide (4 caractères)');return;}
-  G.name=name; G.role='yellow'; G.code=code;
-  initAbly(code);
-  G.channel.subscribe('state', msg=>{ applyRoom(msg.data); });
-  G.channel.subscribe('restart_vote', msg=>{
-    G.restartVote[msg.data.color]=true;
-    if(G.restartVote.red&&G.restartVote.yellow){
-      G.restartVote={red:false,yellow:false};
-    }
-  });
-  // Annoncer l'arrivée
-  await G.channel.publish('join',{name});
+  const binId=document.getElementById('input-code').value.trim();
+  if(!binId){showError('home-error','Collez le code reçu');return;}
+  G.name=name; G.role='yellow'; G.binId=binId;
+  showError('home-error','Connexion…');
+  const room=await readBin(binId);
+  if(!room){showError('home-error','Partie introuvable');return;}
+  room.yellowName=name; room.status='playing'; room.updatedAt=Date.now();
+  await writeBin(binId,room);
+  applyRoom(room);
   showError('home-error','');
   show('game');
-  // Afficher un plateau vide en attendant l'état
-  G.board=emptyBoard();
-  G.turn='red'; G.gameOver=false; G.winner=null; G.winCells=[];
-  document.getElementById('name-yellow').textContent=name;
-  renderBoard();
-  updateStatus({status:'waiting',gameOver:false,turn:'red'});
+  startPolling();
+}
+
+function copyCode(){
+  const code=document.getElementById('waiting-code').textContent;
+  navigator.clipboard.writeText(code).catch(()=>{}).then(()=>alert('Code copié !'));
 }
 
 function show(s){['home','waiting','game'].forEach(id=>{const el=document.getElementById('screen-'+id);if(el)el.classList.toggle('hidden',id!==s);});}
@@ -178,7 +167,6 @@ function applyRoom(room){
   if(!room)return;
   G.board=room.board; G.turn=room.turn; G.gameOver=room.gameOver;
   G.winner=room.winner; G.winCells=room.winCells||[];
-  if(room.restartVote)G.restartVote=room.restartVote;
   if(room.redName)document.getElementById('name-red').textContent=room.redName;
   if(room.yellowName)document.getElementById('name-yellow').textContent=room.yellowName;
   renderBoard(); updateTurnUI(); updateStatus(room);
@@ -221,7 +209,7 @@ function updateStatus(room){
   const el=document.getElementById('status-bar');
   const rb=document.getElementById('btn-restart');
   if(!el)return;
-  if(!room.status||room.status==='waiting'){el.textContent='En attente du 2e joueur…';el.className='status-bar';return;}
+  if(room.status==='waiting'){el.textContent='En attente du 2e joueur…';el.className='status-bar';return;}
   if(room.gameOver){
     if(room.winner){
       const wn=room.winner==='red'?document.getElementById('name-red').textContent:document.getElementById('name-yellow').textContent;
@@ -249,44 +237,57 @@ function checkWin(board,color){
 }
 function isDraw(board){return board.every(row=>row.every(c=>c!==null));}
 
-function dropPiece(col){
+async function dropPiece(col){
   if(G.gameOver||G.turn!==G.role)return;
-  const board=G.board.map(r=>[...r]);
+  const room=await readBin(G.binId);
+  if(!room||room.turn!==G.role)return;
   let row=-1;
-  for(let r=ROWS-1;r>=0;r--){if(!board[r][col]){row=r;break;}}
+  for(let r=ROWS-1;r>=0;r--){if(!room.board[r][col]){row=r;break;}}
   if(row<0)return;
-  board[row][col]=G.role;
-  const winCells=checkWin(board,G.role);
-  const draw=!winCells&&isDraw(board);
-  const room={
-    board,
-    turn:winCells||draw?G.role:(G.role==='red'?'yellow':'red'),
-    status:'playing',
-    redName:document.getElementById('name-red').textContent,
-    yellowName:document.getElementById('name-yellow').textContent,
-    gameOver:!!(winCells||draw),
-    winner:winCells?G.role:null,
-    winCells:winCells||[],
-    restartVote:{red:false,yellow:false}
-  };
-  G.channel.publish('state',room);
+  room.board[row][col]=G.role;
+  const winCells=checkWin(room.board,G.role);
+  if(winCells){room.gameOver=true;room.winner=G.role;room.winCells=winCells;}
+  else if(isDraw(room.board)){room.gameOver=true;room.winner=null;room.winCells=[];}
+  else{room.turn=G.role==='red'?'yellow':'red';}
+  room.updatedAt=Date.now();
+  await writeBin(G.binId,room);
   applyRoom(room);
 }
 
-function requestRestart(){
-  G.channel.publish('restart_vote',{color:G.role});
-  G.restartVote[G.role]=true;
-  if(G.restartVote.red&&G.restartVote.yellow){
-    G.restartVote={red:false,yellow:false};
-    const room={board:emptyBoard(),turn:'red',status:'playing',redName:document.getElementById('name-red').textContent,yellowName:document.getElementById('name-yellow').textContent,gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
-    G.channel.publish('state',room);
-    applyRoom(room);
+async function requestRestart(){
+  const room=await readBin(G.binId);
+  if(!room)return;
+  room.restartVote[G.role]=true;
+  if(room.restartVote.red&&room.restartVote.yellow){
+    room.board=emptyBoard();room.turn='red';room.gameOver=false;
+    room.winner=null;room.winCells=[];room.restartVote={red:false,yellow:false};
   }
+  room.updatedAt=Date.now();
+  await writeBin(G.binId,room);
+  applyRoom(room);
+}
+
+function startPolling(){
+  if(G.polling)clearInterval(G.polling);
+  let lastUpdatedAt=0;
+  G.polling=setInterval(async()=>{
+    if(!G.binId)return;
+    const room=await readBin(G.binId);
+    if(!room)return;
+    // Ne mettre à jour que si quelque chose a changé
+    if(room.updatedAt===lastUpdatedAt)return;
+    lastUpdatedAt=room.updatedAt;
+    const waiting=document.getElementById('screen-waiting');
+    if(room.status==='playing'&&waiting&&!waiting.classList.contains('hidden')){
+      applyRoom(room);show('game');return;
+    }
+    applyRoom(room);
+  },500);
 }
 
 function resetGame(){
-  if(G.ably)G.ably.close();
-  G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],ably:null,channel:null,restartVote:{red:false,yellow:false}};
+  if(G.polling)clearInterval(G.polling);
+  G={role:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null,lastUpdate:0};
   document.getElementById('input-name').value='';
   document.getElementById('input-code').value='';
   showError('home-error','');
