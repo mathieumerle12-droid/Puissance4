@@ -6,60 +6,52 @@
 <title>Puissance 4 — Multijoueur</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --red: #E8412A;
-    --yellow: #F5C518;
-    --blue-dark: #0D1B2A;
-    --text: #F0EDE6;
-    --text-muted: #7A95AD;
-    --border: rgba(255,255,255,0.08);
-    --card-bg: rgba(255,255,255,0.04);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--blue-dark); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
-  h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 6vw, 3.5rem); letter-spacing: -0.03em; text-align: center; margin-bottom: 0.2rem; line-height: 1; }
-  h1 span { color: var(--yellow); }
-  .tagline { color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 2rem; }
-  .screen { width: 100%; max-width: 420px; }
-  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
-  label { font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
-  input[type=text] { width: 100%; height: 48px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 10px; padding: 0 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; margin-bottom: 12px; display: block; }
-  input[type=text]::placeholder { color: var(--text-muted); }
-  .btn { display: block; width: 100%; height: 48px; border-radius: 10px; border: none; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; text-transform: uppercase; }
-  .btn-primary { background: var(--yellow); color: #1A1200; margin-bottom: 10px; }
-  .btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
-  .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--text-muted); font-size: 12px; }
-  .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
-  .room-code-display { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; letter-spacing: 10px; text-align: center; color: var(--yellow); padding: 20px 0 10px; }
-  .game-area { width: 100%; max-width: 480px; }
-  .game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .player-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg); }
-  .player-tag.active-red { border-color: var(--red); background: rgba(232,65,42,0.12); }
-  .player-tag.active-yellow { border-color: var(--yellow); background: rgba(245,197,24,0.12); }
-  .player-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .dot-red { background: var(--red); }
-  .dot-yellow { background: var(--yellow); }
-  .board-wrap { background: linear-gradient(145deg, #185FA5, #0C3D6E); border-radius: 16px; padding: 12px; margin-bottom: 14px; }
-  .col-hints { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-bottom: 6px; }
+  :root { --red:#E8412A; --yellow:#F5C518; --blue-dark:#0D1B2A; --text:#F0EDE6; --text-muted:#7A95AD; --border:rgba(255,255,255,0.08); --card-bg:rgba(255,255,255,0.04); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--blue-dark); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1rem; }
+  h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2rem,6vw,3.5rem); letter-spacing:-0.03em; text-align:center; margin-bottom:0.2rem; line-height:1; }
+  h1 span { color:var(--yellow); }
+  .tagline { color:var(--text-muted); font-size:14px; text-align:center; margin-bottom:2rem; }
+  .screen { width:100%; max-width:420px; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1rem; }
+  label { font-size:12px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:6px; }
+  input[type=text] { width:100%; height:48px; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:10px; padding:0 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px; outline:none; margin-bottom:12px; display:block; }
+  input[type=text]::placeholder { color:var(--text-muted); }
+  .btn { display:block; width:100%; height:48px; border-radius:10px; border:none; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:0.04em; text-transform:uppercase; }
+  .btn-primary { background:var(--yellow); color:#1A1200; margin-bottom:10px; }
+  .btn-secondary { background:rgba(255,255,255,0.08); color:var(--text); border:1px solid var(--border); }
+  .divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:var(--text-muted); font-size:12px; }
+  .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .room-code-display { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; letter-spacing:4px; text-align:center; color:var(--yellow); padding:20px 0 10px; word-break:break-all; }
+  .game-area { width:100%; max-width:480px; }
+  .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .player-tag { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card-bg); }
+  .player-tag.active-red { border-color:var(--red); background:rgba(232,65,42,0.12); }
+  .player-tag.active-yellow { border-color:var(--yellow); background:rgba(245,197,24,0.12); }
+  .player-dot { width:10px; height:10px; border-radius:50%; }
+  .dot-red { background:var(--red); }
+  .dot-yellow { background:var(--yellow); }
+  .board-wrap { background:linear-gradient(145deg,#185FA5,#0C3D6E); border-radius:16px; padding:12px; margin-bottom:14px; }
+  .col-hints { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
   .col-hint { aspect-ratio:1; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-  .col-hint:hover { background: rgba(255,255,255,0.15); }
+  .col-hint:hover { background:rgba(255,255,255,0.15); }
   .col-hint::after { content:'▼'; font-size:10px; color:rgba(255,255,255,0.4); }
   .col-hint.cant { cursor:default; }
   .col-hint.cant::after { opacity:0; }
-  .board-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; }
+  .board-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
   .cell { aspect-ratio:1; border-radius:50%; background:rgba(0,0,0,0.35); box-shadow:inset 0 3px 8px rgba(0,0,0,0.5); }
-  .cell.red { background: var(--red); box-shadow: 0 0 12px rgba(232,65,42,0.5); }
-  .cell.yellow { background: var(--yellow); box-shadow: 0 0 12px rgba(245,197,24,0.5); }
-  .cell.win { outline: 3px solid white; }
+  .cell.red { background:var(--red); box-shadow:0 0 12px rgba(232,65,42,0.5); }
+  .cell.yellow { background:var(--yellow); box-shadow:0 0 12px rgba(245,197,24,0.5); }
+  .cell.win { outline:3px solid white; }
   .status-bar { text-align:center; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--text-muted); min-height:22px; margin-bottom:10px; }
-  .status-bar.win-msg { color: var(--yellow); font-size: 18px; }
+  .status-bar.win-msg { color:var(--yellow); font-size:18px; }
   .btn-sm { height:44px; padding:0 16px; border-radius:10px; border:none; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:0.04em; text-transform:uppercase; }
   .bottom-actions { display:flex; gap:8px; }
   .btn-sm.outline { flex:1; background:transparent; color:var(--text-muted); border:1px solid var(--border); }
   .btn-sm.solid { flex:1; background:rgba(255,255,255,0.1); color:var(--text); border:1px solid var(--border); }
   .hidden { display:none !important; }
   .error-msg { color:#E8412A; font-size:13px; text-align:center; margin-top:8px; min-height:18px; }
-  .pulse { animation: pulse 2s infinite; }
+  .pulse { animation:pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
   .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.2); border-top-color:var(--text); border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
   @keyframes spin { to{transform:rotate(360deg)} }
@@ -76,7 +68,7 @@
     <button class="btn btn-primary" onclick="createRoom()">Créer une partie</button>
     <div class="divider">ou rejoindre</div>
     <label>Code de la partie</label>
-    <input type="text" id="input-code" placeholder="Ex: AB12" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Syne',sans-serif;font-size:20px;text-align:center;" />
+    <input type="text" id="input-code" placeholder="Collez le code reçu" />
     <button class="btn btn-secondary" onclick="joinRoom()">Rejoindre</button>
     <div class="error-msg" id="home-error"></div>
   </div>
@@ -84,15 +76,16 @@
 
 <div id="screen-waiting" class="screen hidden">
   <h1>EN ATTENTE</h1>
-  <p class="tagline">Partagez ce code avec votre adversaire</p>
+  <p class="tagline">Envoyez ce code à votre adversaire</p>
   <div class="card" style="text-align:center;">
     <div class="room-code-display" id="waiting-code">----</div>
-    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire doit entrer ce code sur la même page</p>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire colle ce code dans le champ "Code de la partie"</p>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;" class="pulse">
       <span class="spinner"></span> En attente de connexion…
     </div>
   </div>
-  <button class="btn btn-secondary" onclick="resetGame()">Annuler</button>
+  <button class="btn btn-secondary" style="margin-top:8px;" onclick="copyCode()">Copier le code</button>
+  <button class="btn btn-secondary" style="margin-top:8px;" onclick="resetGame()">Annuler</button>
 </div>
 
 <div id="screen-game" class="game-area hidden">
@@ -113,68 +106,59 @@
 </div>
 
 <script>
-const COLS=7, ROWS=6;
+const COLS=7,ROWS=6;
 const MASTER_KEY='$2a$10$hchBo1QdwJneh3v3GCUAqeECOPd4/tV/HBPai7VhswEoZ8KpYMNqG';
-let G={role:null,code:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
+let G={role:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
 
 function emptyBoard(){return Array(ROWS).fill(null).map(()=>Array(COLS).fill(null));}
-function randCode(){return Math.random().toString(36).substr(2,4).toUpperCase();}
 
 async function createBin(data){
   const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY,'X-Bin-Private':'false'},body:JSON.stringify(data)});
   const d=await r.json();
   return d.metadata?.id||null;
 }
-
 async function readBin(id){
   const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':MASTER_KEY}});
   const d=await r.json();
   return d.record||null;
 }
-
 async function writeBin(id,data){
   await fetch('https://api.jsonbin.io/v3/b/'+id,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},body:JSON.stringify(data)});
 }
 
-function saveMapping(code,binId){try{localStorage.setItem('p4_'+code,binId);}catch(e){}}
-function getMapping(code){try{return localStorage.getItem('p4_'+code);}catch(e){return null;}}
-
 async function createRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 1';
   G.name=name; G.role='red';
-  const code=randCode(); G.code=code;
-  const room={code,board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
   showError('home-error','Création en cours…');
+  const room={board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
   const binId=await createBin(room);
   if(!binId){showError('home-error','Erreur réseau, réessayez');return;}
   G.binId=binId;
-  saveMapping(code,binId);
-  document.getElementById('waiting-code').textContent=code;
+  // Le code = l'ID du bin directement
+  document.getElementById('waiting-code').textContent=binId;
   showError('home-error','');
   show('waiting'); startPolling();
 }
 
 async function joinRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 2';
-  const code=document.getElementById('input-code').value.trim().toUpperCase();
-  if(code.length<4){showError('home-error','Code invalide (4 caractères)');return;}
-  const binId=getMapping(code);
-  if(!binId){showError('home-error','Partie introuvable — vérifiez le code');return;}
-  G.name=name; G.role='yellow'; G.code=code; G.binId=binId;
+  const binId=document.getElementById('input-code').value.trim();
+  if(!binId){showError('home-error','Collez le code reçu');return;}
+  G.name=name; G.role='yellow'; G.binId=binId;
   showError('home-error','Connexion…');
   const room=await readBin(binId);
-  if(!room){showError('home-error','Partie introuvable');return;}
+  if(!room){showError('home-error','Partie introuvable — vérifiez le code');return;}
   room.yellowName=name; room.status='playing';
   await writeBin(binId,room);
-  applyRoom(room); show('game'); startPolling();
+  applyRoom(room); showError('home-error',''); show('game'); startPolling();
 }
 
-function show(s){
-  ['home','waiting','game'].forEach(id=>{
-    const el=document.getElementById('screen-'+id);
-    if(el)el.classList.toggle('hidden',id!==s);
-  });
+function copyCode(){
+  const code=document.getElementById('waiting-code').textContent;
+  navigator.clipboard.writeText(code).then(()=>alert('Code copié ! Envoyez-le à votre adversaire.'));
 }
+
+function show(s){['home','waiting','game'].forEach(id=>{const el=document.getElementById('screen-'+id);if(el)el.classList.toggle('hidden',id!==s);});}
 
 function applyRoom(room){
   if(!room)return;
@@ -248,7 +232,6 @@ function checkWin(board,color){
   }
   return null;
 }
-
 function isDraw(board){return board.every(row=>row.every(c=>c!==null));}
 
 async function dropPiece(col){
@@ -286,16 +269,14 @@ function startPolling(){
     const room=await readBin(G.binId);
     if(!room)return;
     const waiting=document.getElementById('screen-waiting');
-    if(room.status==='playing'&&waiting&&!waiting.classList.contains('hidden')){
-      applyRoom(room);show('game');return;
-    }
+    if(room.status==='playing'&&waiting&&!waiting.classList.contains('hidden')){applyRoom(room);show('game');return;}
     applyRoom(room);
   },2500);
 }
 
 function resetGame(){
   if(G.polling)clearInterval(G.polling);
-  G={role:null,code:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
+  G={role:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
   document.getElementById('input-name').value='';
   document.getElementById('input-code').value='';
   showError('home-error','');
