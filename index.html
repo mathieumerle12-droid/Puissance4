@@ -22,7 +22,7 @@
   .btn-secondary { background:rgba(255,255,255,0.08); color:var(--text); border:1px solid var(--border); }
   .divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:var(--text-muted); font-size:12px; }
   .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-  .room-code-display { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; letter-spacing:4px; text-align:center; color:var(--yellow); padding:20px 0 10px; word-break:break-all; }
+  .room-code-display { font-family:'Syne',sans-serif; font-size:52px; font-weight:800; letter-spacing:10px; text-align:center; color:var(--yellow); padding:20px 0 10px; }
   .game-area { width:100%; max-width:480px; }
   .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .player-tag { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card-bg); transition:all 0.3s; }
@@ -67,8 +67,8 @@
     <input type="text" id="input-name" placeholder="Ex: Alice" maxlength="16" />
     <button class="btn btn-primary" onclick="createRoom()">Créer une partie</button>
     <div class="divider">ou rejoindre</div>
-    <label>Code de la partie</label>
-    <input type="text" id="input-code" placeholder="Collez le code reçu" />
+    <label>Code de la partie (4 lettres)</label>
+    <input type="text" id="input-code" placeholder="Ex: AB12" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Syne',sans-serif;font-size:20px;text-align:center;" />
     <button class="btn btn-secondary" style="margin-top:0;" onclick="joinRoom()">Rejoindre</button>
     <div class="error-msg" id="home-error"></div>
   </div>
@@ -76,16 +76,16 @@
 
 <div id="screen-waiting" class="screen hidden">
   <h1>EN ATTENTE</h1>
-  <p class="tagline">Envoyez ce code à votre adversaire</p>
+  <p class="tagline">Partagez ce code avec votre adversaire</p>
   <div class="card" style="text-align:center;">
     <div class="room-code-display" id="waiting-code">----</div>
-    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire colle ce code dans le champ "Code de la partie"</p>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire entre ce code sur la même page</p>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;" class="pulse">
       <span class="spinner"></span> En attente de connexion…
     </div>
   </div>
-  <button class="btn btn-secondary" onclick="copyCode()">Copier le code</button>
-  <button class="btn btn-secondary" style="margin-top:8px;" onclick="resetGame()">Annuler</button>
+  <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="copyCode()">Copier le code</button>
+  <button class="btn btn-secondary" onclick="resetGame()">Annuler</button>
 </div>
 
 <div id="screen-game" class="game-area hidden">
@@ -107,34 +107,37 @@
 
 <script>
 const COLS=7,ROWS=6;
-const MASTER_KEY='$2a$10$hchBo1QdwJneh3v3GCUAqeECOPd4/tV/HBPai7VhswEoZ8KpYMNqG';
-let G={role:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null,lastUpdate:0};
+const SB_URL='https://lbddwzcaxzumassnnqbx.supabase.co';
+const SB_KEY='sb_publishable_uTErRnP9Kyvdpp2WsoCuxQ_rJCaAwLy';
+const HEADERS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+
+let G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
 
 function emptyBoard(){return Array(ROWS).fill(null).map(()=>Array(COLS).fill(null));}
+function randCode(){return Math.random().toString(36).substr(2,4).toUpperCase();}
 
-async function createBin(data){
-  const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY,'X-Bin-Private':'false'},body:JSON.stringify(data)});
+async function dbGet(code){
+  const r=await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}&select=*`,{headers:HEADERS});
   const d=await r.json();
-  return d.metadata?.id||null;
+  return d&&d[0]?d[0].data:null;
 }
-async function readBin(id){
-  const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':MASTER_KEY,'Cache-Control':'no-cache'}});
-  const d=await r.json();
-  return d.record||null;
+
+async function dbCreate(code,data){
+  await fetch(`${SB_URL}/rest/v1/rooms`,{method:'POST',headers:HEADERS,body:JSON.stringify({code,data})});
 }
-async function writeBin(id,data){
-  await fetch('https://api.jsonbin.io/v3/b/'+id,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},body:JSON.stringify(data)});
+
+async function dbUpdate(code,data){
+  await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}`,{method:'PATCH',headers:{...HEADERS,'Prefer':'return=minimal'},body:JSON.stringify({data})});
 }
 
 async function createRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 1';
   G.name=name; G.role='red';
+  const code=randCode(); G.code=code;
   showError('home-error','Création en cours…');
-  const room={board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false},updatedAt:Date.now()};
-  const binId=await createBin(room);
-  if(!binId){showError('home-error','Erreur réseau, réessayez');return;}
-  G.binId=binId;
-  document.getElementById('waiting-code').textContent=binId;
+  const room={board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
+  await dbCreate(code,room);
+  document.getElementById('waiting-code').textContent=code;
   showError('home-error','');
   show('waiting');
   startPolling();
@@ -142,14 +145,14 @@ async function createRoom(){
 
 async function joinRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 2';
-  const binId=document.getElementById('input-code').value.trim();
-  if(!binId){showError('home-error','Collez le code reçu');return;}
-  G.name=name; G.role='yellow'; G.binId=binId;
+  const code=document.getElementById('input-code').value.trim().toUpperCase();
+  if(code.length<4){showError('home-error','Code invalide (4 caractères)');return;}
+  G.name=name; G.role='yellow'; G.code=code;
   showError('home-error','Connexion…');
-  const room=await readBin(binId);
-  if(!room){showError('home-error','Partie introuvable');return;}
-  room.yellowName=name; room.status='playing'; room.updatedAt=Date.now();
-  await writeBin(binId,room);
+  const room=await dbGet(code);
+  if(!room){showError('home-error','Partie introuvable — vérifiez le code');return;}
+  room.yellowName=name; room.status='playing';
+  await dbUpdate(code,room);
   applyRoom(room);
   showError('home-error','');
   show('game');
@@ -158,7 +161,7 @@ async function joinRoom(){
 
 function copyCode(){
   const code=document.getElementById('waiting-code').textContent;
-  navigator.clipboard.writeText(code).catch(()=>{}).then(()=>alert('Code copié !'));
+  navigator.clipboard.writeText(code).then(()=>alert('Code "'+code+'" copié ! Envoyez-le à votre adversaire.'));
 }
 
 function show(s){['home','waiting','game'].forEach(id=>{const el=document.getElementById('screen-'+id);if(el)el.classList.toggle('hidden',id!==s);});}
@@ -239,7 +242,7 @@ function isDraw(board){return board.every(row=>row.every(c=>c!==null));}
 
 async function dropPiece(col){
   if(G.gameOver||G.turn!==G.role)return;
-  const room=await readBin(G.binId);
+  const room=await dbGet(G.code);
   if(!room||room.turn!==G.role)return;
   let row=-1;
   for(let r=ROWS-1;r>=0;r--){if(!room.board[r][col]){row=r;break;}}
@@ -249,45 +252,39 @@ async function dropPiece(col){
   if(winCells){room.gameOver=true;room.winner=G.role;room.winCells=winCells;}
   else if(isDraw(room.board)){room.gameOver=true;room.winner=null;room.winCells=[];}
   else{room.turn=G.role==='red'?'yellow':'red';}
-  room.updatedAt=Date.now();
-  await writeBin(G.binId,room);
+  await dbUpdate(G.code,room);
   applyRoom(room);
 }
 
 async function requestRestart(){
-  const room=await readBin(G.binId);
+  const room=await dbGet(G.code);
   if(!room)return;
   room.restartVote[G.role]=true;
   if(room.restartVote.red&&room.restartVote.yellow){
     room.board=emptyBoard();room.turn='red';room.gameOver=false;
     room.winner=null;room.winCells=[];room.restartVote={red:false,yellow:false};
   }
-  room.updatedAt=Date.now();
-  await writeBin(G.binId,room);
+  await dbUpdate(G.code,room);
   applyRoom(room);
 }
 
 function startPolling(){
   if(G.polling)clearInterval(G.polling);
-  let lastUpdatedAt=0;
   G.polling=setInterval(async()=>{
-    if(!G.binId)return;
-    const room=await readBin(G.binId);
+    if(!G.code)return;
+    const room=await dbGet(G.code);
     if(!room)return;
-    // Ne mettre à jour que si quelque chose a changé
-    if(room.updatedAt===lastUpdatedAt)return;
-    lastUpdatedAt=room.updatedAt;
     const waiting=document.getElementById('screen-waiting');
     if(room.status==='playing'&&waiting&&!waiting.classList.contains('hidden')){
       applyRoom(room);show('game');return;
     }
     applyRoom(room);
-  },500);
+  },800);
 }
 
 function resetGame(){
   if(G.polling)clearInterval(G.polling);
-  G={role:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null,lastUpdate:0};
+  G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
   document.getElementById('input-name').value='';
   document.getElementById('input-code').value='';
   showError('home-error','');
