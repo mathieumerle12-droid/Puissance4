@@ -1,297 +1,706 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Puissance 4 — Multijoueur</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Game Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-  :root { --red:#E8412A; --yellow:#F5C518; --blue-dark:#0D1B2A; --text:#F0EDE6; --text-muted:#7A95AD; --border:rgba(255,255,255,0.08); --card-bg:rgba(255,255,255,0.04); }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'DM Sans',sans-serif; background:var(--blue-dark); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1rem; }
-  h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2rem,6vw,3.5rem); letter-spacing:-0.03em; text-align:center; margin-bottom:0.2rem; line-height:1; }
-  h1 span { color:var(--yellow); }
-  .tagline { color:var(--text-muted); font-size:14px; text-align:center; margin-bottom:2rem; }
-  .screen { width:100%; max-width:420px; }
-  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1rem; }
-  label { font-size:12px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:6px; }
-  input[type=text] { width:100%; height:48px; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:10px; padding:0 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px; outline:none; margin-bottom:12px; display:block; }
-  input[type=text]::placeholder { color:var(--text-muted); }
-  .btn { display:block; width:100%; height:48px; border-radius:10px; border:none; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:0.04em; text-transform:uppercase; }
-  .btn-primary { background:var(--yellow); color:#1A1200; margin-bottom:10px; }
-  .btn-secondary { background:rgba(255,255,255,0.08); color:var(--text); border:1px solid var(--border); }
-  .divider { display:flex; align-items:center; gap:10px; margin:16px 0; color:var(--text-muted); font-size:12px; }
-  .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-  .room-code-display { font-family:'Syne',sans-serif; font-size:52px; font-weight:800; letter-spacing:10px; text-align:center; color:var(--yellow); padding:20px 0 10px; }
-  .game-area { width:100%; max-width:480px; }
-  .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .player-tag { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--card-bg); transition:all 0.3s; }
-  .player-tag.active-red { border-color:var(--red); background:rgba(232,65,42,0.12); }
-  .player-tag.active-yellow { border-color:var(--yellow); background:rgba(245,197,24,0.12); }
-  .player-dot { width:10px; height:10px; border-radius:50%; }
-  .dot-red { background:var(--red); }
-  .dot-yellow { background:var(--yellow); }
-  .board-wrap { background:linear-gradient(145deg,#185FA5,#0C3D6E); border-radius:16px; padding:12px; margin-bottom:14px; }
-  .col-hints { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
-  .col-hint { aspect-ratio:1; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-  .col-hint:hover { background:rgba(255,255,255,0.15); }
-  .col-hint::after { content:'▼'; font-size:10px; color:rgba(255,255,255,0.4); }
-  .col-hint.cant { cursor:default; }
-  .col-hint.cant::after { opacity:0; }
-  .board-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-  .cell { aspect-ratio:1; border-radius:50%; background:rgba(0,0,0,0.35); box-shadow:inset 0 3px 8px rgba(0,0,0,0.5); }
-  .cell.red { background:var(--red); box-shadow:0 0 12px rgba(232,65,42,0.5); }
-  .cell.yellow { background:var(--yellow); box-shadow:0 0 12px rgba(245,197,24,0.5); }
-  .cell.win { outline:3px solid white; }
-  .status-bar { text-align:center; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--text-muted); min-height:22px; margin-bottom:10px; }
-  .status-bar.win-msg { color:var(--yellow); font-size:18px; }
-  .btn-sm { height:44px; padding:0 16px; border-radius:10px; border:none; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:0.04em; text-transform:uppercase; }
-  .bottom-actions { display:flex; gap:8px; }
-  .btn-sm.outline { flex:1; background:transparent; color:var(--text-muted); border:1px solid var(--border); }
-  .btn-sm.solid { flex:1; background:rgba(255,255,255,0.1); color:var(--text); border:1px solid var(--border); }
-  .hidden { display:none !important; }
-  .error-msg { color:#E8412A; font-size:13px; text-align:center; margin-top:8px; min-height:18px; }
-  .pulse { animation:pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.2); border-top-color:var(--text); border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
-  @keyframes spin { to{transform:rotate(360deg)} }
+:root{
+  --red:#E8412A;--yellow:#F5C518;--green:#2D6A4F;--green-felt:#1a4731;
+  --blue-dark:#0D1B2A;--text:#F0EDE6;--text-muted:#7A95AD;
+  --border:rgba(255,255,255,0.08);--card-bg:rgba(255,255,255,0.04);
+  --pool-felt:#2D6A4F;--pool-rail:#8B4513;--pool-rail-dark:#5C2E00;
+  --ball-red:#CC2200;--ball-yellow:#E8C000;--ball-white:#F5F0E8;--ball-black:#1a1a1a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--blue-dark);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.page{display:none;min-height:100vh;}
+.page.active{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
+#menu-page{background:var(--blue-dark);position:relative;}
+#menu-page::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(24,95,165,0.3) 0%,transparent 70%);pointer-events:none;}
+.menu-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.5rem,8vw,5rem);letter-spacing:-0.04em;text-align:center;margin-bottom:0.3rem;line-height:1;}
+.menu-title span{color:var(--yellow);}
+.menu-sub{color:var(--text-muted);font-size:14px;text-align:center;margin-bottom:3rem;}
+.game-cards{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;max-width:700px;}
+.game-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:2rem 1.5rem;width:280px;cursor:pointer;transition:transform 0.2s,border-color 0.2s,background 0.2s;text-align:center;}
+.game-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.07);}
+.game-icon{font-size:48px;margin-bottom:1rem;display:block;}
+.game-card h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:0.5rem;}
+.game-card p{color:var(--text-muted);font-size:13px;line-height:1.5;}
+.badge{display:inline-block;background:rgba(245,197,24,0.15);color:var(--yellow);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-top:10px;border:1px solid rgba(245,197,24,0.3);}
+.screen{width:100%;max-width:480px;}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1rem;}
+label{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;}
+input[type=text]{width:100%;height:48px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:0 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;margin-bottom:12px;display:block;}
+input[type=text]::placeholder{color:var(--text-muted);}
+.btn{display:block;width:100%;height:48px;border-radius:10px;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;transition:opacity 0.2s,transform 0.1s;}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:var(--yellow);color:#1A1200;margin-bottom:10px;}
+.btn-secondary{background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border);}
+.btn-green{background:#1a6b3c;color:#fff;margin-bottom:10px;}
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text-muted);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.room-code-display{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;letter-spacing:10px;text-align:center;color:var(--yellow);padding:20px 0 10px;}
+.error-msg{color:var(--red);font-size:13px;text-align:center;margin-top:8px;min-height:18px;}
+.pulse{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--text);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important;}
+.back-btn{position:fixed;top:1rem;left:1rem;background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;z-index:100;letter-spacing:0.04em;}
+.back-btn:hover{background:rgba(255,255,255,0.14);}
+#p4-page{background:var(--blue-dark);}
+#p4-page::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(24,95,165,0.2) 0%,transparent 70%);pointer-events:none;}
+.p4-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,6vw,3.5rem);letter-spacing:-0.03em;text-align:center;margin-bottom:0.2rem;line-height:1;}
+.p4-title span{color:var(--yellow);}
+.tagline{color:var(--text-muted);font-size:14px;text-align:center;margin-bottom:2rem;}
+.game-area{width:100%;max-width:480px;}
+.game-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.player-tag{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card-bg);transition:all 0.3s;}
+.player-tag.active-red{border-color:var(--red);background:rgba(232,65,42,0.12);}
+.player-tag.active-yellow{border-color:var(--yellow);background:rgba(245,197,24,0.12);}
+.player-dot{width:10px;height:10px;border-radius:50%;}
+.dot-red{background:var(--red);}
+.dot-yellow{background:var(--yellow);}
+.board-wrap{background:linear-gradient(145deg,#185FA5,#0C3D6E);border-radius:16px;padding:12px;margin-bottom:14px;}
+.col-hints{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+.col-hint{aspect-ratio:1;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.col-hint:hover{background:rgba(255,255,255,0.15);}
+.col-hint::after{content:'▼';font-size:10px;color:rgba(255,255,255,0.4);}
+.col-hint.cant{cursor:default;}
+.col-hint.cant::after{opacity:0;}
+.board-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.p4-cell{aspect-ratio:1;border-radius:50%;background:rgba(0,0,0,0.35);box-shadow:inset 0 3px 8px rgba(0,0,0,0.5);}
+.p4-cell.red{background:var(--red);box-shadow:0 0 12px rgba(232,65,42,0.5);}
+.p4-cell.yellow{background:var(--yellow);box-shadow:0 0 12px rgba(245,197,24,0.5);}
+.p4-cell.win{outline:3px solid white;}
+.status-bar{text-align:center;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text-muted);min-height:22px;margin-bottom:10px;}
+.status-bar.win-msg{color:var(--yellow);font-size:18px;}
+.btn-sm{height:44px;padding:0 16px;border-radius:10px;border:none;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;}
+.bottom-actions{display:flex;gap:8px;}
+.btn-sm.outline{flex:1;background:transparent;color:var(--text-muted);border:1px solid var(--border);}
+.btn-sm.solid{flex:1;background:rgba(255,255,255,0.1);color:var(--text);border:1px solid var(--border);}
+#pool-page{background:#0a1f0e;}
+.pool-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,5vw,3rem);letter-spacing:-0.03em;text-align:center;margin-bottom:0.2rem;line-height:1;color:#e8f5e9;}
+.pool-title span{color:#69c97a;}
+.pool-game-area{width:100%;max-width:700px;}
+.pool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.pool-player-tag{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);transition:all 0.3s;}
+.pool-player-tag.active{border-color:#69c97a;background:rgba(105,201,122,0.12);}
+.pool-player-tag.type-red .pdot{background:#CC2200;}
+.pool-player-tag.type-yellow .pdot{background:#E8C000;}
+.pdot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);}
+.table-wrap{position:relative;width:100%;border-radius:12px;overflow:hidden;border:12px solid #8B4513;box-shadow:0 0 0 4px #5C2E00,0 20px 60px rgba(0,0,0,0.6);margin-bottom:14px;}
+#pool-canvas{display:block;width:100%;background:#1a4731;}
+.pool-status{text-align:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#a5d6a7;min-height:20px;margin-bottom:10px;}
+.pool-status.win{color:#FFD700;font-size:17px;}
+.aim-hint{text-align:center;font-size:12px;color:rgba(165,214,167,0.5);margin-bottom:8px;}
+.power-wrap{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.power-wrap label{color:#a5d6a7;font-size:12px;margin:0;white-space:nowrap;letter-spacing:0.06em;}
+.power-bar{flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;}
+.power-fill{height:100%;background:linear-gradient(90deg,#69c97a,#FFD700,#E8412A);border-radius:3px;transition:width 0.1s;}
+input[type=range]{width:100%;accent-color:#69c97a;}
+.chat-wrap{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:10px;}
+.chat-messages{height:100px;overflow-y:auto;margin-bottom:8px;display:flex;flex-direction:column;gap:4px;}
+.chat-msg{font-size:12px;line-height:1.4;}
+.chat-msg .who{font-weight:500;margin-right:4px;}
+.chat-msg.me .who{color:var(--yellow);}
+.chat-msg.them .who{color:#69c97a;}
+.chat-msg.system{color:var(--text-muted);font-style:italic;}
+.chat-input-row{display:flex;gap:6px;}
+.chat-input-row input{flex:1;height:36px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:0 10px;color:var(--text);font-size:13px;outline:none;margin:0;}
+.chat-send{height:36px;padding:0 14px;background:rgba(255,255,255,0.1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 </style>
 </head>
 <body>
 
-<div id="screen-home" class="screen">
-  <h1>PUIS<span>SANCE</span> 4</h1>
-  <p class="tagline">Multijoueur en ligne — partagez un code</p>
-  <div class="card">
-    <label>Votre prénom</label>
-    <input type="text" id="input-name" placeholder="Ex: Alice" maxlength="16" />
-    <button class="btn btn-primary" onclick="createRoom()">Créer une partie</button>
-    <div class="divider">ou rejoindre</div>
-    <label>Code de la partie (4 lettres)</label>
-    <input type="text" id="input-code" placeholder="Ex: AB12" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Syne',sans-serif;font-size:20px;text-align:center;" />
-    <button class="btn btn-secondary" style="margin-top:0;" onclick="joinRoom()">Rejoindre</button>
-    <div class="error-msg" id="home-error"></div>
-  </div>
-</div>
-
-<div id="screen-waiting" class="screen hidden">
-  <h1>EN ATTENTE</h1>
-  <p class="tagline">Partagez ce code avec votre adversaire</p>
-  <div class="card" style="text-align:center;">
-    <div class="room-code-display" id="waiting-code">----</div>
-    <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire entre ce code sur la même page</p>
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;" class="pulse">
-      <span class="spinner"></span> En attente de connexion…
+<!-- MENU -->
+<div id="menu-page" class="page active">
+  <h1 class="menu-title">GAME<span>HUB</span></h1>
+  <p class="menu-sub">Choisissez un jeu — multijoueur en ligne</p>
+  <div class="game-cards">
+    <div class="game-card" onclick="openGame('p4')">
+      <span class="game-icon">🔴</span>
+      <h2>Puissance 4</h2>
+      <p>Alignez 4 pions avant votre adversaire. Tour par tour, stratégie et réflexes.</p>
+      <span class="badge">2 joueurs</span>
+    </div>
+    <div class="game-card" onclick="openGame('pool')">
+      <span class="game-icon">🎱</span>
+      <h2>Billard Pool</h2>
+      <p>Billard anglais 8-ball. Rentrez toutes vos boules puis la noire pour gagner.</p>
+      <span class="badge">2 joueurs</span>
     </div>
   </div>
-  <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="copyCode()">Copier le code</button>
-  <button class="btn btn-secondary" onclick="resetGame()">Annuler</button>
 </div>
 
-<div id="screen-game" class="game-area hidden">
-  <div class="game-header">
-    <div class="player-tag" id="tag-red"><span class="player-dot dot-red"></span><span id="name-red">Joueur 1</span></div>
-    <div style="font-family:'Syne',sans-serif;font-size:12px;color:var(--text-muted);">VS</div>
-    <div class="player-tag" id="tag-yellow"><span class="player-dot dot-yellow"></span><span id="name-yellow">Joueur 2</span></div>
+<!-- PUISSANCE 4 -->
+<div id="p4-page" class="page">
+  <button class="back-btn" onclick="backToMenu()">← Menu</button>
+  <div id="p4-lobby" class="screen">
+    <h1 class="p4-title">PUIS<span>SANCE</span> 4</h1>
+    <p class="tagline">Multijoueur en ligne — partagez un code</p>
+    <div class="card">
+      <label>Votre prénom</label>
+      <input type="text" id="p4-name" placeholder="Ex: Alice" maxlength="16"/>
+      <button class="btn btn-primary" onclick="p4Create()">Créer une partie</button>
+      <div class="divider">ou rejoindre</div>
+      <label>Code de la partie (4 lettres)</label>
+      <input type="text" id="p4-code" placeholder="Ex: AB12" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Syne',sans-serif;font-size:20px;text-align:center;"/>
+      <button class="btn btn-secondary" style="margin-top:0;" onclick="p4Join()">Rejoindre</button>
+      <div class="error-msg" id="p4-error"></div>
+    </div>
   </div>
-  <div class="board-wrap">
-    <div class="col-hints" id="col-hints"></div>
-    <div class="board-grid" id="board"></div>
+  <div id="p4-waiting" class="screen hidden">
+    <h1 class="p4-title">EN ATTENTE</h1>
+    <p class="tagline">Partagez ce code avec votre adversaire</p>
+    <div class="card" style="text-align:center;">
+      <div class="room-code-display" id="p4-waiting-code">----</div>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Votre adversaire entre ce code sur la même page</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;" class="pulse">
+        <span class="spinner"></span> En attente de connexion…
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="p4CopyCode()">Copier le code</button>
+    <button class="btn btn-secondary" onclick="p4Reset()">Annuler</button>
   </div>
-  <div class="status-bar" id="status-bar"></div>
-  <div class="bottom-actions">
-    <button class="btn-sm solid hidden" id="btn-restart" onclick="requestRestart()">↺ Rejouer</button>
-    <button class="btn-sm outline" onclick="resetGame()">← Quitter</button>
+  <div id="p4-game" class="game-area hidden">
+    <div class="game-header">
+      <div class="player-tag" id="p4-tag-red"><span class="player-dot dot-red"></span><span id="p4-name-red">Joueur 1</span></div>
+      <div style="font-family:'Syne',sans-serif;font-size:12px;color:var(--text-muted);">VS</div>
+      <div class="player-tag" id="p4-tag-yellow"><span class="player-dot dot-yellow"></span><span id="p4-name-yellow">Joueur 2</span></div>
+    </div>
+    <div class="board-wrap">
+      <div class="col-hints" id="p4-col-hints"></div>
+      <div class="board-grid" id="p4-board"></div>
+    </div>
+    <div class="status-bar" id="p4-status"></div>
+    <div class="bottom-actions">
+      <button class="btn-sm solid hidden" id="p4-btn-restart" onclick="p4Restart()">↺ Rejouer</button>
+      <button class="btn-sm outline" onclick="p4Reset()">← Quitter</button>
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-messages" id="p4-chat-msgs"></div>
+      <div class="chat-input-row">
+        <input type="text" id="p4-chat-input" placeholder="Message…" maxlength="80" onkeydown="if(event.key==='Enter')p4SendChat()"/>
+        <button class="chat-send" onclick="p4SendChat()">Envoyer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BILLARD -->
+<div id="pool-page" class="page">
+  <button class="back-btn" onclick="backToMenu()">← Menu</button>
+  <div id="pool-lobby" class="screen">
+    <h1 class="pool-title">BILLARD<span> POOL</span></h1>
+    <p class="tagline" style="color:#a5d6a7;">8-ball anglais — multijoueur en ligne</p>
+    <div class="card" style="background:rgba(255,255,255,0.03);">
+      <label>Votre prénom</label>
+      <input type="text" id="pool-name" placeholder="Ex: Bob" maxlength="16"/>
+      <button class="btn btn-green" onclick="poolCreate()">Créer une partie</button>
+      <div class="divider">ou rejoindre</div>
+      <label>Code de la partie (4 lettres)</label>
+      <input type="text" id="pool-code" placeholder="Ex: XY34" maxlength="4" style="text-transform:uppercase;letter-spacing:4px;font-family:'Syne',sans-serif;font-size:20px;text-align:center;"/>
+      <button class="btn btn-secondary" style="margin-top:0;" onclick="poolJoin()">Rejoindre</button>
+      <div class="error-msg" id="pool-error"></div>
+    </div>
+  </div>
+  <div id="pool-waiting" class="screen hidden">
+    <h1 class="pool-title">EN ATTENTE</h1>
+    <p class="tagline" style="color:#a5d6a7;">Partagez ce code</p>
+    <div class="card" style="text-align:center;background:rgba(255,255,255,0.03);">
+      <div class="room-code-display" id="pool-waiting-code">----</div>
+      <p style="color:#a5d6a7;font-size:13px;margin-bottom:16px;">Votre adversaire entre ce code</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:#a5d6a7;font-size:13px;" class="pulse">
+        <span class="spinner"></span> En attente…
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="poolCopyCode()">Copier le code</button>
+    <button class="btn btn-secondary" onclick="poolReset()">Annuler</button>
+  </div>
+  <div id="pool-game" class="pool-game-area hidden">
+    <div class="pool-header">
+      <div class="pool-player-tag type-red" id="pool-tag-p1">
+        <span class="pdot"></span><span id="pool-name-p1">Joueur 1</span>
+        <span id="pool-balls-p1" style="font-size:11px;color:rgba(255,255,255,0.5);margin-left:4px;"></span>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-size:11px;color:rgba(255,255,255,0.3);">VS</div>
+      <div class="pool-player-tag type-yellow" id="pool-tag-p2">
+        <span class="pdot"></span><span id="pool-name-p2">Joueur 2</span>
+        <span id="pool-balls-p2" style="font-size:11px;color:rgba(255,255,255,0.5);margin-left:4px;"></span>
+      </div>
+    </div>
+    <div class="table-wrap"><canvas id="pool-canvas"></canvas></div>
+    <div class="pool-status" id="pool-status"></div>
+    <div class="aim-hint" id="pool-aim-hint">Cliquez sur la table pour viser, ajustez la force puis tirez</div>
+    <button id="pool-shoot-btn" class="btn btn-green" style="margin-bottom:8px;" onclick="poolShoot()">TIRER</button>
+    <div class="power-wrap">
+      <label>FORCE</label>
+      <div class="power-bar"><div class="power-fill" id="power-fill" style="width:50%;"></div></div>
+      <input type="range" id="pool-power" min="1" max="100" value="50" oninput="updatePower()" style="width:120px;"/>
+    </div>
+    <div class="bottom-actions" style="margin-top:8px;">
+      <button class="btn-sm solid hidden" id="pool-btn-restart" onclick="poolRestart()">↺ Rejouer</button>
+      <button class="btn-sm outline" onclick="poolReset()">← Quitter</button>
+    </div>
+    <div class="chat-wrap">
+      <div class="chat-messages" id="pool-chat-msgs"></div>
+      <div class="chat-input-row">
+        <input type="text" id="pool-chat-input" placeholder="Message…" maxlength="80" onkeydown="if(event.key==='Enter')poolSendChat()"/>
+        <button class="chat-send" onclick="poolSendChat()">Envoyer</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const COLS=7,ROWS=6;
 const SB_URL='https://lbddwzcaxzumassnnqbx.supabase.co';
 const SB_KEY='sb_publishable_uTErRnP9Kyvdpp2WsoCuxQ_rJCaAwLy';
-const HEADERS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
-
-let G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
-
-function emptyBoard(){return Array(ROWS).fill(null).map(()=>Array(COLS).fill(null));}
-function randCode(){return Math.random().toString(36).substr(2,4).toUpperCase();}
+const H={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
 
 async function dbGet(code){
-  const r=await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}&select=*`,{headers:HEADERS});
+  const r=await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}&select=*`,{headers:H});
   const d=await r.json();
   return d&&d[0]?d[0].data:null;
 }
-
 async function dbCreate(code,data){
-  await fetch(`${SB_URL}/rest/v1/rooms`,{method:'POST',headers:HEADERS,body:JSON.stringify({code,data})});
+  await fetch(`${SB_URL}/rest/v1/rooms`,{method:'POST',headers:H,body:JSON.stringify({code,data})});
 }
-
 async function dbUpdate(code,data){
-  await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}`,{method:'PATCH',headers:{...HEADERS,'Prefer':'return=minimal'},body:JSON.stringify({data})});
+  await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({data})});
+}
+function randCode(){return Math.random().toString(36).substr(2,4).toUpperCase();}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function openGame(g){showPage(g==='p4'?'p4-page':'pool-page');}
+function backToMenu(){p4StopPolling();poolStopPolling();showPage('menu-page');}
+
+// ══════════════════════════════
+// PUISSANCE 4
+// ══════════════════════════════
+const P4C=7,P4R=6;
+let p4={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
+function p4EmptyBoard(){return Array(P4R).fill(null).map(()=>Array(P4C).fill(null));}
+function p4Show(s){['p4-lobby','p4-waiting','p4-game'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==s));}
+
+async function p4Create(){
+  const name=document.getElementById('p4-name').value.trim()||'Joueur 1';
+  p4.name=name;p4.role='red';
+  const code=randCode();p4.code=code;
+  p4SetError('Création…');
+  await dbCreate(code,{board:p4EmptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false},chat:[]});
+  document.getElementById('p4-waiting-code').textContent=code;
+  p4SetError('');p4Show('p4-waiting');p4StartPolling();
 }
 
-async function createRoom(){
-  const name=document.getElementById('input-name').value.trim()||'Joueur 1';
-  G.name=name; G.role='red';
-  const code=randCode(); G.code=code;
-  showError('home-error','Création en cours…');
-  const room={board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
-  await dbCreate(code,room);
-  document.getElementById('waiting-code').textContent=code;
-  showError('home-error','');
-  show('waiting');
-  startPolling();
-}
-
-async function joinRoom(){
-  const name=document.getElementById('input-name').value.trim()||'Joueur 2';
-  const code=document.getElementById('input-code').value.trim().toUpperCase();
-  if(code.length<4){showError('home-error','Code invalide (4 caractères)');return;}
-  G.name=name; G.role='yellow'; G.code=code;
-  showError('home-error','Connexion…');
+async function p4Join(){
+  const name=document.getElementById('p4-name').value.trim()||'Joueur 2';
+  const code=document.getElementById('p4-code').value.trim().toUpperCase();
+  if(code.length<4){p4SetError('Code invalide');return;}
+  p4.name=name;p4.role='yellow';p4.code=code;
+  p4SetError('Connexion…');
   const room=await dbGet(code);
-  if(!room){showError('home-error','Partie introuvable — vérifiez le code');return;}
-  room.yellowName=name; room.status='playing';
+  if(!room){p4SetError('Partie introuvable');return;}
+  room.yellowName=name;room.status='playing';
   await dbUpdate(code,room);
-  applyRoom(room);
-  showError('home-error','');
-  show('game');
-  startPolling();
+  p4Apply(room);p4SetError('');p4Show('p4-game');p4StartPolling();
 }
 
-function copyCode(){
-  const code=document.getElementById('waiting-code').textContent;
-  navigator.clipboard.writeText(code).then(()=>alert('Code "'+code+'" copié ! Envoyez-le à votre adversaire.'));
-}
+function p4CopyCode(){const c=document.getElementById('p4-waiting-code').textContent;navigator.clipboard.writeText(c).then(()=>alert('Code "'+c+'" copié !'));}
 
-function show(s){['home','waiting','game'].forEach(id=>{const el=document.getElementById('screen-'+id);if(el)el.classList.toggle('hidden',id!==s);});}
-
-function applyRoom(room){
+function p4Apply(room){
   if(!room)return;
-  G.board=room.board; G.turn=room.turn; G.gameOver=room.gameOver;
-  G.winner=room.winner; G.winCells=room.winCells||[];
-  if(room.redName)document.getElementById('name-red').textContent=room.redName;
-  if(room.yellowName)document.getElementById('name-yellow').textContent=room.yellowName;
-  renderBoard(); updateTurnUI(); updateStatus(room);
+  p4.board=room.board;p4.turn=room.turn;p4.gameOver=room.gameOver;
+  p4.winner=room.winner;p4.winCells=room.winCells||[];
+  if(room.redName)document.getElementById('p4-name-red').textContent=room.redName;
+  if(room.yellowName)document.getElementById('p4-name-yellow').textContent=room.yellowName;
+  p4Render();p4TurnUI();p4StatusUI(room);
+  if(room.chat)p4RenderChat(room.chat);
 }
 
-function renderBoard(){
-  const hints=document.getElementById('col-hints');
-  const board=document.getElementById('board');
-  if(!hints||!board||!G.board)return;
-  const canPlay=!G.gameOver&&G.turn===G.role;
+function p4Render(){
+  const hints=document.getElementById('p4-col-hints');
+  const board=document.getElementById('p4-board');
+  if(!hints||!board||!p4.board)return;
+  const can=!p4.gameOver&&p4.turn===p4.role;
   hints.innerHTML='';
-  for(let c=0;c<COLS;c++){
-    const h=document.createElement('div');
-    h.className='col-hint'+(canPlay?'':' cant');
-    if(canPlay)h.onclick=()=>dropPiece(c);
-    hints.appendChild(h);
-  }
+  for(let c=0;c<P4C;c++){const h=document.createElement('div');h.className='col-hint'+(can?'':' cant');if(can)h.onclick=()=>p4Drop(c);hints.appendChild(h);}
   board.innerHTML='';
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const cell=document.createElement('div');
-      cell.className='cell';
-      const v=G.board[r][c];
-      if(v)cell.classList.add(v);
-      if(G.winCells.some(([wr,wc])=>wr===r&&wc===c))cell.classList.add('win');
-      board.appendChild(cell);
-    }
+  for(let r=0;r<P4R;r++)for(let c=0;c<P4C;c++){
+    const cell=document.createElement('div');cell.className='p4-cell';
+    const v=p4.board[r][c];if(v)cell.classList.add(v);
+    if(p4.winCells.some(([wr,wc])=>wr===r&&wc===c))cell.classList.add('win');
+    board.appendChild(cell);
   }
 }
 
-function updateTurnUI(){
-  const tr=document.getElementById('tag-red');
-  const ty=document.getElementById('tag-yellow');
+function p4TurnUI(){
+  const tr=document.getElementById('p4-tag-red'),ty=document.getElementById('p4-tag-yellow');
   if(!tr||!ty)return;
-  tr.className='player-tag'+(G.turn==='red'&&!G.gameOver?' active-red':'');
-  ty.className='player-tag'+(G.turn==='yellow'&&!G.gameOver?' active-yellow':'');
+  tr.className='player-tag'+(p4.turn==='red'&&!p4.gameOver?' active-red':'');
+  ty.className='player-tag'+(p4.turn==='yellow'&&!p4.gameOver?' active-yellow':'');
 }
 
-function updateStatus(room){
-  const el=document.getElementById('status-bar');
-  const rb=document.getElementById('btn-restart');
+function p4StatusUI(room){
+  const el=document.getElementById('p4-status'),rb=document.getElementById('p4-btn-restart');
   if(!el)return;
   if(room.status==='waiting'){el.textContent='En attente du 2e joueur…';el.className='status-bar';return;}
   if(room.gameOver){
-    if(room.winner){
-      const wn=room.winner==='red'?document.getElementById('name-red').textContent:document.getElementById('name-yellow').textContent;
-      el.textContent='🏆 '+wn+' remporte la partie !';
-    }else{el.textContent='Match nul !';}
-    el.className='status-bar win-msg';
-    if(rb)rb.classList.remove('hidden');
+    const wn=room.winner==='red'?document.getElementById('p4-name-red').textContent:document.getElementById('p4-name-yellow').textContent;
+    el.textContent=room.winner?'🏆 '+wn+' remporte la partie !':'Match nul !';
+    el.className='status-bar win-msg';if(rb)rb.classList.remove('hidden');
   }else{
-    const tn=G.turn==='red'?document.getElementById('name-red').textContent:document.getElementById('name-yellow').textContent;
-    el.textContent=G.turn===G.role?'À vous de jouer !':'Au tour de '+tn+'…';
-    el.className='status-bar';
+    const tn=p4.turn==='red'?document.getElementById('p4-name-red').textContent:document.getElementById('p4-name-yellow').textContent;
+    el.textContent=p4.turn===p4.role?'À vous de jouer !':'Au tour de '+tn+'…';
+    el.className='status-bar';if(rb)rb.classList.add('hidden');
+  }
+}
+
+function p4CheckWin(board,color){
+  const ok=(cells)=>cells.every(([r,c])=>r>=0&&r<P4R&&c>=0&&c<P4C&&board[r][c]===color);
+  for(let r=0;r<P4R;r++)for(let c=0;c<P4C;c++){
+    const sets=[[[r,c],[r,c+1],[r,c+2],[r,c+3]],[[r,c],[r+1,c],[r+2,c],[r+3,c]],[[r,c],[r+1,c+1],[r+2,c+2],[r+3,c+3]],[[r,c],[r+1,c-1],[r+2,c-2],[r+3,c-3]]];
+    for(const s of sets)if(ok(s))return s;
+  }return null;
+}
+
+async function p4Drop(col){
+  if(p4.gameOver||p4.turn!==p4.role)return;
+  const room=await dbGet(p4.code);
+  if(!room||room.turn!==p4.role)return;
+  let row=-1;for(let r=P4R-1;r>=0;r--)if(!room.board[r][col]){row=r;break;}
+  if(row<0)return;
+  room.board[row][col]=p4.role;
+  const wc=p4CheckWin(room.board,p4.role);
+  if(wc){room.gameOver=true;room.winner=p4.role;room.winCells=wc;}
+  else if(room.board.every(r=>r.every(c=>c))){room.gameOver=true;room.winner=null;room.winCells=[];}
+  else room.turn=p4.role==='red'?'yellow':'red';
+  await dbUpdate(p4.code,room);p4Apply(room);
+}
+
+async function p4Restart(){
+  const room=await dbGet(p4.code);if(!room)return;
+  room.restartVote[p4.role]=true;
+  if(room.restartVote.red&&room.restartVote.yellow){
+    room.board=p4EmptyBoard();room.turn='red';room.gameOver=false;
+    room.winner=null;room.winCells=[];room.restartVote={red:false,yellow:false};room.chat=[];
+  }
+  await dbUpdate(p4.code,room);p4Apply(room);
+}
+
+function p4StartPolling(){
+  p4StopPolling();
+  p4.polling=setInterval(async()=>{
+    if(!p4.code)return;
+    const room=await dbGet(p4.code);if(!room)return;
+    const w=document.getElementById('p4-waiting');
+    if(room.status==='playing'&&w&&!w.classList.contains('hidden')){p4Apply(room);p4Show('p4-game');return;}
+    p4Apply(room);
+  },800);
+}
+function p4StopPolling(){if(p4.polling){clearInterval(p4.polling);p4.polling=null;}}
+function p4Reset(){
+  p4StopPolling();
+  p4={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
+  document.getElementById('p4-name').value='';document.getElementById('p4-code').value='';
+  p4SetError('');p4Show('p4-lobby');
+}
+function p4SetError(msg){document.getElementById('p4-error').textContent=msg;}
+
+function p4RenderChat(msgs){
+  const el=document.getElementById('p4-chat-msgs');if(!el)return;
+  el.innerHTML='';
+  msgs.forEach(m=>{
+    const div=document.createElement('div');
+    div.className='chat-msg '+(m.system?'system':m.role===p4.role?'me':'them');
+    if(!m.system){const who=document.createElement('span');who.className='who';who.textContent=m.name+': ';div.appendChild(who);}
+    div.appendChild(document.createTextNode(m.text));el.appendChild(div);
+  });
+  el.scrollTop=el.scrollHeight;
+}
+
+async function p4SendChat(){
+  const input=document.getElementById('p4-chat-input');
+  const text=input.value.trim();if(!text||!p4.code)return;
+  input.value='';
+  const room=await dbGet(p4.code);if(!room)return;
+  if(!room.chat)room.chat=[];
+  room.chat.push({role:p4.role,name:p4.name,text});
+  if(room.chat.length>50)room.chat=room.chat.slice(-50);
+  await dbUpdate(p4.code,room);p4Apply(room);
+}
+
+// ══════════════════════════════
+// BILLARD POOL
+// ══════════════════════════════
+const TW=672,TH=336;
+let canvas,ctx;
+let pool={role:null,code:null,name:'',polling:null,gameOver:false,myTurn:false,aimAngle:0,aimSet:false,power:50,balls:[],turn:'p1',p1Name:'',p2Name:'',p1Type:null,p2Type:null,winner:null};
+
+function poolInitBalls(){
+  const balls=[];
+  balls.push({id:'white',x:TW*0.25,y:TH/2,vx:0,vy:0,r:11,color:'#F5F0E8',type:'white',pocketed:false});
+  const rx=TW*0.65,ry=TH/2,sp=23;
+  const rack=[['red'],['yellow','red'],['red','black','yellow'],['yellow','red','yellow','red'],['red','yellow','red','yellow','red']];
+  let bid=1;
+  rack.forEach((row,ri)=>{
+    const startY=ry-(row.length-1)*sp/2;
+    row.forEach((type,ci)=>{
+      const color=type==='red'?'#CC2200':type==='yellow'?'#E8C000':'#1a1a1a';
+      balls.push({id:'b'+(bid++),x:rx+ri*sp*0.866,y:startY+ci*sp,vx:0,vy:0,r:11,color,type,pocketed:false});
+    });
+  });
+  return balls;
+}
+
+function poolInitRoom(p1Name){
+  return{balls:poolInitBalls(),turn:'p1',status:'waiting',p1Name,p2Name:'',p1Type:null,p2Type:null,gameOver:false,winner:null,restartVote:{p1:false,p2:false},chat:[]};
+}
+
+function poolShow(s){['pool-lobby','pool-waiting','pool-game'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==s));}
+
+async function poolCreate(){
+  const name=document.getElementById('pool-name').value.trim()||'Joueur 1';
+  pool.name=name;pool.role='p1';
+  const code=randCode();pool.code=code;
+  poolSetError('Création…');
+  await dbCreate(code,poolInitRoom(name));
+  document.getElementById('pool-waiting-code').textContent=code;
+  poolSetError('');poolShow('pool-waiting');poolStartPolling();
+}
+
+async function poolJoin(){
+  const name=document.getElementById('pool-name').value.trim()||'Joueur 2';
+  const code=document.getElementById('pool-code').value.trim().toUpperCase();
+  if(code.length<4){poolSetError('Code invalide');return;}
+  pool.name=name;pool.role='p2';pool.code=code;
+  poolSetError('Connexion…');
+  const room=await dbGet(code);
+  if(!room){poolSetError('Partie introuvable');return;}
+  room.p2Name=name;room.status='playing';
+  await dbUpdate(code,room);
+  poolApply(room);poolSetError('');poolShow('pool-game');poolInitCanvas();poolStartPolling();
+}
+
+function poolCopyCode(){const c=document.getElementById('pool-waiting-code').textContent;navigator.clipboard.writeText(c).then(()=>alert('Code "'+c+'" copié !'));}
+
+function poolInitCanvas(){
+  canvas=document.getElementById('pool-canvas');
+  canvas.width=TW;canvas.height=TH;
+  ctx=canvas.getContext('2d');
+  canvas.addEventListener('click',poolCanvasClick);
+  poolDraw();
+}
+
+function poolApply(room){
+  if(!room)return;
+  pool.balls=room.balls;pool.turn=room.turn;pool.gameOver=room.gameOver;
+  pool.winner=room.winner;pool.p1Name=room.p1Name;pool.p2Name=room.p2Name;
+  pool.p1Type=room.p1Type;pool.p2Type=room.p2Type;
+  pool.myTurn=(room.turn===pool.role)&&!room.gameOver&&room.status==='playing';
+  if(room.p1Name)document.getElementById('pool-name-p1').textContent=room.p1Name;
+  if(room.p2Name)document.getElementById('pool-name-p2').textContent=room.p2Name;
+  poolUpdateUI(room);
+  if(room.chat)poolRenderChat(room.chat);
+  if(ctx)poolDraw();
+}
+
+function poolUpdateUI(room){
+  const s=document.getElementById('pool-status'),rb=document.getElementById('pool-btn-restart'),hint=document.getElementById('pool-aim-hint');
+  const t1=document.getElementById('pool-tag-p1'),t2=document.getElementById('pool-tag-p2');
+  if(t1)t1.classList.toggle('active',pool.turn==='p1'&&!pool.gameOver);
+  if(t2)t2.classList.toggle('active',pool.turn==='p2'&&!pool.gameOver);
+  if(pool.balls){
+    const reds=pool.balls.filter(b=>b.type==='red'&&!b.pocketed).length;
+    const yellows=pool.balls.filter(b=>b.type==='yellow'&&!b.pocketed).length;
+    const p1el=document.getElementById('pool-balls-p1'),p2el=document.getElementById('pool-balls-p2');
+    if(pool.p1Type==='red'&&p1el)p1el.textContent='('+reds+' rest.)';
+    if(pool.p1Type==='yellow'&&p1el)p1el.textContent='('+yellows+' rest.)';
+    if(pool.p2Type==='red'&&p2el)p2el.textContent='('+reds+' rest.)';
+    if(pool.p2Type==='yellow'&&p2el)p2el.textContent='('+yellows+' rest.)';
+  }
+  if(!s)return;
+  if(room.status==='waiting'){s.textContent='En attente du 2e joueur…';s.className='pool-status';return;}
+  if(pool.gameOver){
+    const wn=pool.winner==='p1'?pool.p1Name:pool.p2Name;
+    s.textContent='🏆 '+wn+' remporte la partie !';s.className='pool-status win';
+    if(rb)rb.classList.remove('hidden');if(hint)hint.textContent='';
+  }else{
+    const tn=pool.turn==='p1'?pool.p1Name:pool.p2Name;
+    s.textContent=pool.myTurn?'À vous de jouer !':'Au tour de '+tn+'…';s.className='pool-status';
+    if(hint)hint.textContent=pool.myTurn?(pool.aimSet?'Ajustez la force et cliquez TIRER':'Cliquez sur la table pour viser'):'Attendez votre tour…';
     if(rb)rb.classList.add('hidden');
   }
 }
 
-function checkWin(board,color){
-  const check=(cells)=>cells.every(([r,c])=>r>=0&&r<ROWS&&c>=0&&c<COLS&&board[r][c]===color);
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const sets=[[[r,c],[r,c+1],[r,c+2],[r,c+3]],[[r,c],[r+1,c],[r+2,c],[r+3,c]],[[r,c],[r+1,c+1],[r+2,c+2],[r+3,c+3]],[[r,c],[r+1,c-1],[r+2,c-2],[r+3,c-3]]];
-      for(const s of sets){if(check(s))return s;}
+function poolDraw(){
+  if(!ctx||!pool.balls)return;
+  ctx.fillStyle='#1a4731';ctx.fillRect(0,0,TW,TH);
+  ctx.strokeStyle='rgba(255,255,255,0.02)';ctx.lineWidth=1;
+  for(let i=0;i<TW;i+=20){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,TH);ctx.stroke();}
+  for(let i=0;i<TH;i+=20){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(TW,i);ctx.stroke();}
+  [[0,0],[TW/2,0],[TW,0],[0,TH],[TW/2,TH],[TW,TH]].forEach(([px,py])=>{
+    ctx.beginPath();ctx.arc(px,py,18,0,Math.PI*2);ctx.fillStyle='#050e07';ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.8)';ctx.lineWidth=2;ctx.stroke();
+  });
+  ctx.beginPath();ctx.arc(TW*0.25,TH/2,30,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(TW*0.25,0);ctx.lineTo(TW*0.25,TH);ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.stroke();
+  const cue=pool.balls.find(b=>b.id==='white'&&!b.pocketed);
+  if(cue&&pool.aimSet&&pool.myTurn&&!pool.gameOver){
+    ctx.beginPath();ctx.moveTo(cue.x,cue.y);ctx.lineTo(cue.x+Math.cos(pool.aimAngle)*120,cue.y+Math.sin(pool.aimAngle)*120);
+    ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(cue.x-Math.cos(pool.aimAngle)*15,cue.y-Math.sin(pool.aimAngle)*15);
+    ctx.lineTo(cue.x-Math.cos(pool.aimAngle)*80,cue.y-Math.sin(pool.aimAngle)*80);
+    ctx.strokeStyle='#8B6914';ctx.lineWidth=5;ctx.stroke();
+    ctx.strokeStyle='#F5E6C8';ctx.lineWidth=2;ctx.stroke();
+  }
+  pool.balls.forEach(b=>{
+    if(b.pocketed)return;
+    ctx.beginPath();ctx.arc(b.x+2,b.y+3,b.r,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fill();
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    const g=ctx.createRadialGradient(b.x-b.r*0.3,b.y-b.r*0.3,b.r*0.1,b.x,b.y,b.r);
+    g.addColorStop(0,'rgba(255,255,255,0.4)');g.addColorStop(0.4,b.color);g.addColorStop(1,'rgba(0,0,0,0.4)');
+    ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=1;ctx.stroke();
+    if(b.type==='black'){ctx.fillStyle='white';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('8',b.x,b.y);}
+  });
+}
+
+function poolCanvasClick(e){
+  if(!pool.myTurn||pool.gameOver)return;
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(TW/rect.width);
+  const my=(e.clientY-rect.top)*(TH/rect.height);
+  const cue=pool.balls.find(b=>b.id==='white'&&!b.pocketed);
+  if(!cue)return;
+  pool.aimAngle=Math.atan2(my-cue.y,mx-cue.x);pool.aimSet=true;
+  poolUpdateUI({status:'playing',turn:pool.turn,gameOver:false,p1Name:pool.p1Name,p2Name:pool.p2Name});
+  poolDraw();
+}
+
+function updatePower(){
+  pool.power=parseInt(document.getElementById('pool-power').value);
+  document.getElementById('power-fill').style.width=pool.power+'%';
+}
+
+function poolSimulate(balls){
+  const pocketed=[];
+  const pockets=[[0,0],[TW/2,0],[TW,0],[0,TH],[TW/2,TH],[TW,TH]];
+  const friction=0.985;
+  for(let s=0;s<150;s++){
+    balls.forEach(b=>{
+      if(b.pocketed)return;
+      b.x+=b.vx;b.y+=b.vy;b.vx*=friction;b.vy*=friction;
+      if(Math.abs(b.vx)<0.05)b.vx=0;if(Math.abs(b.vy)<0.05)b.vy=0;
+      if(b.x-b.r<0){b.x=b.r;b.vx*=-0.75;}if(b.x+b.r>TW){b.x=TW-b.r;b.vx*=-0.75;}
+      if(b.y-b.r<0){b.y=b.r;b.vy*=-0.75;}if(b.y+b.r>TH){b.y=TH-b.r;b.vy*=-0.75;}
+      pockets.forEach(([px,py])=>{if(Math.hypot(b.x-px,b.y-py)<20&&!b.pocketed){b.pocketed=true;b.vx=0;b.vy=0;pocketed.push({...b});}});
+    });
+    for(let i=0;i<balls.length;i++)for(let j=i+1;j<balls.length;j++){
+      const a=balls[i],b2=balls[j];if(a.pocketed||b2.pocketed)continue;
+      const dx=b2.x-a.x,dy=b2.y-a.y,dist=Math.hypot(dx,dy);
+      if(dist<a.r+b2.r&&dist>0){
+        const nx=dx/dist,ny=dy/dist,ov=(a.r+b2.r-dist)/2;
+        a.x-=nx*ov;a.y-=ny*ov;b2.x+=nx*ov;b2.y+=ny*ov;
+        const dv=( a.vx-b2.vx)*nx+(a.vy-b2.vy)*ny;
+        if(dv>0){a.vx-=dv*nx;a.vy-=dv*ny;b2.vx+=dv*nx;b2.vy+=dv*ny;}
+      }
     }
   }
-  return null;
-}
-function isDraw(board){return board.every(row=>row.every(c=>c!==null));}
-
-async function dropPiece(col){
-  if(G.gameOver||G.turn!==G.role)return;
-  const room=await dbGet(G.code);
-  if(!room||room.turn!==G.role)return;
-  let row=-1;
-  for(let r=ROWS-1;r>=0;r--){if(!room.board[r][col]){row=r;break;}}
-  if(row<0)return;
-  room.board[row][col]=G.role;
-  const winCells=checkWin(room.board,G.role);
-  if(winCells){room.gameOver=true;room.winner=G.role;room.winCells=winCells;}
-  else if(isDraw(room.board)){room.gameOver=true;room.winner=null;room.winCells=[];}
-  else{room.turn=G.role==='red'?'yellow':'red';}
-  await dbUpdate(G.code,room);
-  applyRoom(room);
+  return{balls,pocketed};
 }
 
-async function requestRestart(){
-  const room=await dbGet(G.code);
-  if(!room)return;
-  room.restartVote[G.role]=true;
-  if(room.restartVote.red&&room.restartVote.yellow){
-    room.board=emptyBoard();room.turn='red';room.gameOver=false;
-    room.winner=null;room.winCells=[];room.restartVote={red:false,yellow:false};
+async function poolShoot(){
+  if(!pool.myTurn||!pool.aimSet||pool.gameOver)return;
+  const room=await dbGet(pool.code);
+  if(!room||room.turn!==pool.role)return;
+  const cue=room.balls.find(b=>b.id==='white'&&!b.pocketed);
+  if(!cue)return;
+  const speed=(pool.power/100)*18;
+  cue.vx=Math.cos(pool.aimAngle)*speed;cue.vy=Math.sin(pool.aimAngle)*speed;
+  const result=poolSimulate(room.balls);
+  room.balls=result.balls;
+  const pocketedNow=result.pocketed;
+  const myType=pool.role==='p1'?room.p1Type:room.p2Type;
+  let scoredOwn=false,scoredBlack=false,foul=false;
+  pocketedNow.forEach(b=>{
+    if(b.id==='white'){foul=true;}
+    else if(b.type==='black'){scoredBlack=true;}
+    else if(myType===null){
+      if(pool.role==='p1'){room.p1Type=b.type;room.p2Type=b.type==='red'?'yellow':'red';}
+      else{room.p2Type=b.type;room.p1Type=b.type==='red'?'yellow':'red';}
+      scoredOwn=true;
+    }else if(b.type===myType){scoredOwn=true;}
+  });
+  if(foul){
+    // Replace cue ball
+    const freeCue=room.balls.find(b=>b.id==='white');
+    if(freeCue){freeCue.pocketed=false;freeCue.x=TW*0.25;freeCue.y=TH/2;freeCue.vx=0;freeCue.vy=0;}
   }
-  await dbUpdate(G.code,room);
-  applyRoom(room);
+  if(scoredBlack){
+    const myT=pool.role==='p1'?room.p1Type:room.p2Type;
+    const myLeft=room.balls.filter(b=>b.type===myT&&!b.pocketed).length;
+    room.gameOver=true;room.winner=(myLeft===0&&!foul)?pool.role:(pool.role==='p1'?'p2':'p1');
+  }
+  if(!room.gameOver){room.turn=(foul||!scoredOwn)?(pool.role==='p1'?'p2':'p1'):pool.role;}
+  pool.aimSet=false;
+  await dbUpdate(pool.code,room);poolApply(room);
 }
 
-function startPolling(){
-  if(G.polling)clearInterval(G.polling);
-  G.polling=setInterval(async()=>{
-    if(!G.code)return;
-    const room=await dbGet(G.code);
-    if(!room)return;
-    const waiting=document.getElementById('screen-waiting');
-    if(room.status==='playing'&&waiting&&!waiting.classList.contains('hidden')){
-      applyRoom(room);show('game');return;
+async function poolRestart(){
+  const room=await dbGet(pool.code);if(!room)return;
+  room.restartVote[pool.role]=true;
+  if(room.restartVote.p1&&room.restartVote.p2){
+    const r2=poolInitRoom(room.p1Name);r2.p2Name=room.p2Name;r2.status='playing';r2.chat=[];
+    await dbUpdate(pool.code,r2);poolApply(r2);
+  }else{await dbUpdate(pool.code,room);}
+}
+
+function poolStartPolling(){
+  poolStopPolling();
+  pool.polling=setInterval(async()=>{
+    if(!pool.code)return;
+    const room=await dbGet(pool.code);if(!room)return;
+    const w=document.getElementById('pool-waiting');
+    if(room.status==='playing'&&w&&!w.classList.contains('hidden')){
+      poolApply(room);poolShow('pool-game');poolInitCanvas();return;
     }
-    applyRoom(room);
+    if(!canvas&&room.status==='playing')poolInitCanvas();
+    poolApply(room);
   },800);
 }
+function poolStopPolling(){if(pool.polling){clearInterval(pool.polling);pool.polling=null;}}
+function poolReset(){
+  poolStopPolling();
+  pool={role:null,code:null,name:'',polling:null,gameOver:false,myTurn:false,aimAngle:0,aimSet:false,power:50,balls:[],turn:'p1',p1Name:'',p2Name:'',p1Type:null,p2Type:null,winner:null};
+  canvas=null;ctx=null;
+  document.getElementById('pool-name').value='';document.getElementById('pool-code').value='';
+  poolSetError('');poolShow('pool-lobby');
+}
+function poolSetError(msg){document.getElementById('pool-error').textContent=msg;}
 
-function resetGame(){
-  if(G.polling)clearInterval(G.polling);
-  G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
-  document.getElementById('input-name').value='';
-  document.getElementById('input-code').value='';
-  showError('home-error','');
-  show('home');
+function poolRenderChat(msgs){
+  const el=document.getElementById('pool-chat-msgs');if(!el)return;
+  el.innerHTML='';
+  msgs.forEach(m=>{
+    const div=document.createElement('div');
+    div.className='chat-msg '+(m.system?'system':m.role===pool.role?'me':'them');
+    if(!m.system){const who=document.createElement('span');who.className='who';who.textContent=m.name+': ';div.appendChild(who);}
+    div.appendChild(document.createTextNode(m.text));el.appendChild(div);
+  });
+  el.scrollTop=el.scrollHeight;
 }
 
-function showError(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
+async function poolSendChat(){
+  const input=document.getElementById('pool-chat-input');
+  const text=input.value.trim();if(!text||!pool.code)return;
+  input.value='';
+  const room=await dbGet(pool.code);if(!room)return;
+  if(!room.chat)room.chat=[];
+  room.chat.push({role:pool.role,name:pool.name,text});
+  if(room.chat.length>50)room.chat=room.chat.slice(-50);
+  await dbUpdate(pool.code,room);poolApply(room);
+}
 </script>
 </body>
 </html>
