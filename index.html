@@ -16,98 +16,30 @@
     --card-bg: rgba(255,255,255,0.04);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--blue-dark);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  h1 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    letter-spacing: -0.03em;
-    text-align: center;
-    margin-bottom: 0.2rem;
-    line-height: 1;
-  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--blue-dark); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
+  h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 6vw, 3.5rem); letter-spacing: -0.03em; text-align: center; margin-bottom: 0.2rem; line-height: 1; }
   h1 span { color: var(--yellow); }
   .tagline { color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 2rem; }
   .screen { width: 100%; max-width: 420px; }
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-  }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
   label { font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
-  input[type=text] {
-    width: 100%;
-    height: 48px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0 14px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    outline: none;
-    margin-bottom: 12px;
-    display: block;
-  }
+  input[type=text] { width: 100%; height: 48px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 10px; padding: 0 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; margin-bottom: 12px; display: block; }
   input[type=text]::placeholder { color: var(--text-muted); }
-  .btn {
-    display: block;
-    width: 100%;
-    height: 48px;
-    border-radius: 10px;
-    border: none;
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
+  .btn { display: block; width: 100%; height: 48px; border-radius: 10px; border: none; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; text-transform: uppercase; }
   .btn-primary { background: var(--yellow); color: #1A1200; margin-bottom: 10px; }
   .btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
   .divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--text-muted); font-size: 12px; }
   .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
-  .room-code-display {
-    font-family: 'Syne', sans-serif;
-    font-size: 48px;
-    font-weight: 800;
-    letter-spacing: 10px;
-    text-align: center;
-    color: var(--yellow);
-    padding: 20px 0 10px;
-  }
+  .room-code-display { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; letter-spacing: 10px; text-align: center; color: var(--yellow); padding: 20px 0 10px; }
   .game-area { width: 100%; max-width: 480px; }
   .game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .player-tag {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 500;
-    padding: 6px 12px; border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--card-bg);
-  }
+  .player-tag { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg); }
   .player-tag.active-red { border-color: var(--red); background: rgba(232,65,42,0.12); }
   .player-tag.active-yellow { border-color: var(--yellow); background: rgba(245,197,24,0.12); }
   .player-dot { width: 10px; height: 10px; border-radius: 50%; }
   .dot-red { background: var(--red); }
   .dot-yellow { background: var(--yellow); }
-  .board-wrap {
-    background: linear-gradient(145deg, #185FA5, #0C3D6E);
-    border-radius: 16px;
-    padding: 12px;
-    margin-bottom: 14px;
-  }
+  .board-wrap { background: linear-gradient(145deg, #185FA5, #0C3D6E); border-radius: 16px; padding: 12px; margin-bottom: 14px; }
   .col-hints { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-bottom: 6px; }
   .col-hint { aspect-ratio:1; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .col-hint:hover { background: rgba(255,255,255,0.15); }
@@ -118,8 +50,7 @@
   .cell { aspect-ratio:1; border-radius:50%; background:rgba(0,0,0,0.35); box-shadow:inset 0 3px 8px rgba(0,0,0,0.5); }
   .cell.red { background: var(--red); box-shadow: 0 0 12px rgba(232,65,42,0.5); }
   .cell.yellow { background: var(--yellow); box-shadow: 0 0 12px rgba(245,197,24,0.5); }
-  .cell.win.red { outline: 3px solid white; }
-  .cell.win.yellow { outline: 3px solid white; }
+  .cell.win { outline: 3px solid white; }
   .status-bar { text-align:center; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--text-muted); min-height:22px; margin-bottom:10px; }
   .status-bar.win-msg { color: var(--yellow); font-size: 18px; }
   .btn-sm { height:44px; padding:0 16px; border-radius:10px; border:none; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:0.04em; text-transform:uppercase; }
@@ -166,15 +97,9 @@
 
 <div id="screen-game" class="game-area hidden">
   <div class="game-header">
-    <div class="player-tag" id="tag-red">
-      <span class="player-dot dot-red"></span>
-      <span id="name-red">Joueur 1</span>
-    </div>
+    <div class="player-tag" id="tag-red"><span class="player-dot dot-red"></span><span id="name-red">Joueur 1</span></div>
     <div style="font-family:'Syne',sans-serif;font-size:12px;color:var(--text-muted);">VS</div>
-    <div class="player-tag" id="tag-yellow">
-      <span class="player-dot dot-yellow"></span>
-      <span id="name-yellow">Joueur 2</span>
-    </div>
+    <div class="player-tag" id="tag-yellow"><span class="player-dot dot-yellow"></span><span id="name-yellow">Joueur 2</span></div>
   </div>
   <div class="board-wrap">
     <div class="col-hints" id="col-hints"></div>
@@ -188,51 +113,60 @@
 </div>
 
 <script>
-const COLS=7,ROWS=6;
-let G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null,rooms:{}};
+const COLS=7, ROWS=6;
+const MASTER_KEY='$2a$10$hchBo1QdwJneh3v3GCUAqeECOPd4/tV/HBPai7VhswEoZ8KpYMNqG';
+let G={role:null,code:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
 
 function emptyBoard(){return Array(ROWS).fill(null).map(()=>Array(COLS).fill(null));}
 function randCode(){return Math.random().toString(36).substr(2,4).toUpperCase();}
 
-async function claude(action,payload){
-  const stored=G.code?(G.rooms[G.code]||null):null;
-  const sys=`You are a Connect Four game server. Respond ONLY with valid JSON, no markdown, no explanation.`;
-  const msg=`Action: ${action}
-Payload: ${JSON.stringify(payload)}
-Stored room: ${JSON.stringify(stored)}
-
-Rules:
-- create: init room. Return {ok:true,room:{code,board:[[null,null,null,null,null,null,null],[null,null,null,null,null,null,null],[null,null,null,null,null,null,null],[null,null,null,null,null,null,null],[null,null,null,null,null,null,null],[null,null,null,null,null,null,null]],turn:"red",status:"waiting",redName:payload.name,yellowName:"",gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}}}
-- join: set yellowName=payload.name, status="playing". If no stored room return {ok:false,error:"Partie introuvable"}
-- drop: place piece at payload.col for payload.color. Find lowest empty row. If col full {ok:false,error:"Colonne pleine"}. Check 4-in-a-row horiz/vert/diag/anti-diag. winCells=array of [row,col] for 4 winning cells. Switch turn. If draw set gameOver:true,winner:null. Return {ok:true,room:{...updated}}
-- poll: return {ok:true,room:stored}
-- restart: set restartVote[payload.color]=true. If both true reset board, turn="red",gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}. Return {ok:true,room:{...}}`;
-
-  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,system:sys,messages:[{role:"user",content:msg}]})});
+async function createBin(data){
+  const r=await fetch('https://api.jsonbin.io/v3/b',{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY,'X-Bin-Private':'false'},body:JSON.stringify(data)});
   const d=await r.json();
-  const t=d.content.map(x=>x.text||"").join("").replace(/```json|```/g,"").trim();
-  try{const res=JSON.parse(t);if(res.ok&&res.room){G.rooms[res.room.code||G.code]=res.room;}return res;}
-  catch(e){return{ok:false,error:"Erreur serveur"};}
+  return d.metadata?.id||null;
 }
+
+async function readBin(id){
+  const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':MASTER_KEY}});
+  const d=await r.json();
+  return d.record||null;
+}
+
+async function writeBin(id,data){
+  await fetch('https://api.jsonbin.io/v3/b/'+id,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},body:JSON.stringify(data)});
+}
+
+function saveMapping(code,binId){try{localStorage.setItem('p4_'+code,binId);}catch(e){}}
+function getMapping(code){try{return localStorage.getItem('p4_'+code);}catch(e){return null;}}
 
 async function createRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 1';
-  G.name=name;G.role='red';
-  const code=randCode();G.code=code;
-  const res=await claude('create',{code,name});
-  if(!res.ok){showError('home-error',res.error||'Erreur');return;}
+  G.name=name; G.role='red';
+  const code=randCode(); G.code=code;
+  const room={code,board:emptyBoard(),turn:'red',status:'waiting',redName:name,yellowName:'',gameOver:false,winner:null,winCells:[],restartVote:{red:false,yellow:false}};
+  showError('home-error','Création en cours…');
+  const binId=await createBin(room);
+  if(!binId){showError('home-error','Erreur réseau, réessayez');return;}
+  G.binId=binId;
+  saveMapping(code,binId);
   document.getElementById('waiting-code').textContent=code;
-  show('waiting');startPolling();
+  showError('home-error','');
+  show('waiting'); startPolling();
 }
 
 async function joinRoom(){
   const name=document.getElementById('input-name').value.trim()||'Joueur 2';
   const code=document.getElementById('input-code').value.trim().toUpperCase();
   if(code.length<4){showError('home-error','Code invalide (4 caractères)');return;}
-  G.name=name;G.role='yellow';G.code=code;
-  const res=await claude('join',{code,name});
-  if(!res.ok){showError('home-error',res.error||'Partie introuvable');return;}
-  applyRoom(res.room);show('game');startPolling();
+  const binId=getMapping(code);
+  if(!binId){showError('home-error','Partie introuvable — vérifiez le code');return;}
+  G.name=name; G.role='yellow'; G.code=code; G.binId=binId;
+  showError('home-error','Connexion…');
+  const room=await readBin(binId);
+  if(!room){showError('home-error','Partie introuvable');return;}
+  room.yellowName=name; room.status='playing';
+  await writeBin(binId,room);
+  applyRoom(room); show('game'); startPolling();
 }
 
 function show(s){
@@ -244,11 +178,11 @@ function show(s){
 
 function applyRoom(room){
   if(!room)return;
-  G.board=room.board;G.turn=room.turn;G.gameOver=room.gameOver;
-  G.winner=room.winner;G.winCells=room.winCells||[];
+  G.board=room.board; G.turn=room.turn; G.gameOver=room.gameOver;
+  G.winner=room.winner; G.winCells=room.winCells||[];
   if(room.redName)document.getElementById('name-red').textContent=room.redName;
   if(room.yellowName)document.getElementById('name-yellow').textContent=room.yellowName;
-  renderBoard();updateTurnUI();updateStatus(room);
+  renderBoard(); updateTurnUI(); updateStatus(room);
 }
 
 function renderBoard(){
@@ -304,25 +238,53 @@ function updateStatus(room){
   }
 }
 
+function checkWin(board,color){
+  const check=(cells)=>cells.every(([r,c])=>r>=0&&r<ROWS&&c>=0&&c<COLS&&board[r][c]===color);
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const sets=[[[r,c],[r,c+1],[r,c+2],[r,c+3]],[[r,c],[r+1,c],[r+2,c],[r+3,c]],[[r,c],[r+1,c+1],[r+2,c+2],[r+3,c+3]],[[r,c],[r+1,c-1],[r+2,c-2],[r+3,c-3]]];
+      for(const s of sets){if(check(s))return s;}
+    }
+  }
+  return null;
+}
+
+function isDraw(board){return board.every(row=>row.every(c=>c!==null));}
+
 async function dropPiece(col){
   if(G.gameOver||G.turn!==G.role)return;
-  const res=await claude('drop',{code:G.code,col,color:G.role});
-  if(!res.ok)return;
-  applyRoom(res.room);
+  const room=await readBin(G.binId);
+  if(!room||room.turn!==G.role)return;
+  let row=-1;
+  for(let r=ROWS-1;r>=0;r--){if(!room.board[r][col]){row=r;break;}}
+  if(row<0)return;
+  room.board[row][col]=G.role;
+  const winCells=checkWin(room.board,G.role);
+  if(winCells){room.gameOver=true;room.winner=G.role;room.winCells=winCells;}
+  else if(isDraw(room.board)){room.gameOver=true;room.winner=null;room.winCells=[];}
+  else{room.turn=G.role==='red'?'yellow':'red';}
+  await writeBin(G.binId,room);
+  applyRoom(room);
 }
 
 async function requestRestart(){
-  const res=await claude('restart',{code:G.code,color:G.role});
-  if(res.ok&&res.room)applyRoom(res.room);
+  const room=await readBin(G.binId);
+  if(!room)return;
+  room.restartVote[G.role]=true;
+  if(room.restartVote.red&&room.restartVote.yellow){
+    room.board=emptyBoard();room.turn='red';room.gameOver=false;
+    room.winner=null;room.winCells=[];room.restartVote={red:false,yellow:false};
+  }
+  await writeBin(G.binId,room);
+  applyRoom(room);
 }
 
 function startPolling(){
   if(G.polling)clearInterval(G.polling);
   G.polling=setInterval(async()=>{
-    if(!G.code)return;
-    const res=await claude('poll',{code:G.code});
-    if(!res.ok||!res.room)return;
-    const room=res.room;
+    if(!G.binId)return;
+    const room=await readBin(G.binId);
+    if(!room)return;
     const waiting=document.getElementById('screen-waiting');
     if(room.status==='playing'&&waiting&&!waiting.classList.contains('hidden')){
       applyRoom(room);show('game');return;
@@ -333,14 +295,14 @@ function startPolling(){
 
 function resetGame(){
   if(G.polling)clearInterval(G.polling);
-  G={role:null,code:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null,rooms:{}};
+  G={role:null,code:null,binId:null,name:'',board:null,turn:'red',gameOver:false,winner:null,winCells:[],polling:null};
   document.getElementById('input-name').value='';
   document.getElementById('input-code').value='';
-  document.getElementById('home-error').textContent='';
+  showError('home-error','');
   show('home');
 }
 
-function showError(id,msg){document.getElementById(id).textContent=msg;}
+function showError(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
 </script>
 </body>
 </html>
